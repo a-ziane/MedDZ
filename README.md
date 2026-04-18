@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PatientDZ MVP (Algeria)
 
-## Getting Started
+PatientDZ is a simple, polished startup MVP to connect patients and doctors in Algeria, reduce waiting time, and support appointment booking with queue tracking.
 
-First, run the development server:
+## Stack
+- Next.js (App Router, full stack)
+- TypeScript
+- Tailwind CSS
+- Supabase (Auth + Postgres + Storage-ready)
+- Vercel (deployment)
 
+## Features
+- Route-based apps in one project:
+  - `/patient`
+  - `/doctor`
+  - `/admin`
+- Supabase Auth (email/password) for patients and doctors
+- Admin-only dashboard with doctor approval workflow
+- Role-based middleware + server-side role checks
+- Doctor search, booking, approvals/rejections, queue tracking
+- Live patient queue page (auto refresh every 30s)
+- In-app notifications
+- English/French/Arabic language switcher with RTL support for Arabic
+- Dark mode toggle
+
+## Quick Start
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create env file:
+```bash
+cp .env.example .env.local
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Fill env values in `.env.local`:
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `CRON_SECRET`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. In Supabase SQL editor, run:
+- `supabase/schema.sql`
+- `supabase/seed.sql`
 
-## Learn More
+5. Start dev server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Authentication + Roles
+- Patients: signup/login from `/auth/signup`, `/auth/login`
+- Doctors: signup/login from `/auth/signup`, `/auth/login`
+- Admins: manually seeded in DB (`users.role = 'admin'`)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+A DB trigger (`handle_auth_user_created`) creates `public.users` and doctor/patient rows automatically when a new auth user is created.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Security Notes
+- Middleware guards protected routes (`/patient`, `/doctor`, `/admin`)
+- Server actions enforce role checks (`requireRole`)
+- RLS enabled on all core tables with role-aware policies
+- Double booking prevented by both server checks and unique partial index
 
-## Deploy on Vercel
+## Deployment (Vercel)
+1. Push repo to GitHub.
+2. Import project in Vercel.
+3. Set all environment variables from `.env.example`.
+4. Deploy.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Optional reminder cron:
+- Endpoint: `GET /api/cron/reminders`
+- Header: `Authorization: Bearer <CRON_SECRET>`
+- Add a Vercel Cron Job hitting this endpoint daily.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+```text
+src/
+  app/
+    auth/
+    patient/
+    doctor/
+    admin/
+    api/
+  components/
+  lib/
+supabase/
+  schema.sql
+  seed.sql
+```
+
+## MVP Scope Notes
+- Email notifications are prepared as optional; in-app notifications are active.
+- Doctor ratings are left as a placeholder for next iteration.
+- `doctor_days_off` table is included for day-off support and can be wired in UI next.
