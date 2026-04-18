@@ -292,8 +292,8 @@ export async function cancelAppointmentByPatient(formData: FormData) {
   }
 
   if (appointment.status === "approved") {
-    const appointmentAt = new Date(`${appointment.appointment_date}T${appointment.appointment_time}:00`);
-    if (Number.isNaN(appointmentAt.getTime()) || appointmentAt <= new Date()) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (appointment.appointment_date < today) {
       return;
     }
   }
@@ -367,8 +367,8 @@ export async function cancelAppointmentByPatientWithFeedback(
   }
 
   if (appointment.status === "approved") {
-    const appointmentAt = new Date(`${appointment.appointment_date}T${appointment.appointment_time}:00`);
-    if (Number.isNaN(appointmentAt.getTime()) || appointmentAt <= new Date()) {
+    const today = new Date().toISOString().slice(0, 10);
+    if (appointment.appointment_date < today) {
       return { ok: false, error: "cannot_cancel_past", submittedAt: Date.now() };
     }
   }
