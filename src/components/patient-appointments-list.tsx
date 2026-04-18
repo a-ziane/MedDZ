@@ -102,7 +102,7 @@ export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) 
               <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmId(null)}>
                 {text("keepAppointment")}
               </Button>
-              <form action={cancelAction} className="flex-1" onSubmit={() => setConfirmId(null)}>
+              <form action={cancelAction} className="flex-1">
                 <input type="hidden" name="appointment_id" value={confirmItem.id} />
                 <Button type="submit" variant="danger" className="w-full" disabled={isCancelling}>
                   {text("cancelNow")}
@@ -115,7 +115,7 @@ export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) 
 
       {!cancelState.ok && cancelState.error && (
         <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {text("cancelFailed")}
+          {text("cancelFailed")} <span className="text-xs opacity-70">({cancelState.error})</span>
         </p>
       )}
     </>

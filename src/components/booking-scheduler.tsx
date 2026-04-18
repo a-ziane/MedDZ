@@ -90,11 +90,16 @@ export function BookingScheduler({
     cancelAppointmentByPatientWithFeedback,
     { ok: false },
   );
+  const pendingCancelled =
+    cancelState.ok &&
+    bookingState.appointment &&
+    cancelState.cancelledAppointmentId === bookingState.appointment.id;
   const showPendingCard = Boolean(
     bookingState.ok &&
       bookingState.appointment &&
       bookingState.submittedAt &&
-      bookingState.submittedAt !== dismissedAt,
+      bookingState.submittedAt !== dismissedAt &&
+      !pendingCancelled,
   );
   const weekStart = useMemo(
     () => addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), weekOffset),
@@ -226,17 +231,13 @@ export function BookingScheduler({
             </Button>
             <form
               action={cancelAction}
-              onSubmit={() => {
-                setDismissedAt(bookingState.submittedAt ?? Date.now());
-                setConfirmPendingCancel(false);
-              }}
             >
               <input type="hidden" name="appointment_id" value={bookingState.appointment.id} />
               <Button type="button" variant="danger" onClick={() => setConfirmPendingCancel(true)}>
                 {text("cancelAppointment")}
               </Button>
 
-              {confirmPendingCancel && (
+              {confirmPendingCancel && !pendingCancelled && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center">
                   <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
                     <h3 className="text-lg font-semibold">{text("confirmCancelTitle")}</h3>
@@ -295,7 +296,7 @@ export function BookingScheduler({
 
       {!cancelState.ok && cancelState.error && (
         <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {text("cancelFailed")}
+          {text("cancelFailed")} <span className="text-xs opacity-70">({cancelState.error})</span>
         </p>
       )}
 
