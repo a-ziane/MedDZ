@@ -18,7 +18,7 @@ export function ModeToggle() {
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
     >
       {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-      {text("darkMode")}
+      <span className="hidden sm:inline">{text("darkMode")}</span>
     </Button>
   );
 }
