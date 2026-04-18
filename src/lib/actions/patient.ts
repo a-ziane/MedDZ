@@ -50,6 +50,37 @@ function weekdayMatchesDate(slotWeekday: number, jsWeekday: number) {
   return false;
 }
 
+function getAlgeriaNowParts() {
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Algiers",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(new Date());
+  const pick = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return {
+    date: `${pick("year")}-${pick("month")}-${pick("day")}`,
+    time: `${pick("hour")}:${pick("minute")}`,
+  };
+}
+
+function isPastInAlgeria(appointmentDate: string, appointmentTime: string) {
+  const now = getAlgeriaNowParts();
+  const time = appointmentTime.slice(0, 5);
+  if (appointmentDate < now.date) return true;
+  if (appointmentDate > now.date) return false;
+  return time <= now.time;
+}
+
+function weekdayFromIsoDate(isoDate: string) {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
 export async function requestAppointment(formData: FormData) {
   const user = await requireRole(["patient"]);
   const supabase = await createClient();
@@ -92,12 +123,11 @@ export async function requestAppointment(formData: FormData) {
     return;
   }
 
-  const appointmentAt = new Date(`${parsed.data.appointment_date}T${parsed.data.appointment_time}:00`);
-  if (Number.isNaN(appointmentAt.getTime()) || appointmentAt <= new Date()) {
+  if (isPastInAlgeria(parsed.data.appointment_date, parsed.data.appointment_time)) {
     return;
   }
 
-  const weekday = appointmentAt.getDay();
+  const weekday = weekdayFromIsoDate(parsed.data.appointment_date);
   const { data: availability } = await supabase
     .from("availability")
     .select("weekday, start_time, end_time, slot_minutes")
@@ -199,8 +229,7 @@ export async function requestAppointmentWithFeedback(
     return { ok: false, error: "doctor_unavailable", submittedAt: Date.now() };
   }
 
-  const appointmentAt = new Date(`${parsed.data.appointment_date}T${parsed.data.appointment_time}:00`);
-  if (Number.isNaN(appointmentAt.getTime()) || appointmentAt <= new Date()) {
+  if (isPastInAlgeria(parsed.data.appointment_date, parsed.data.appointment_time)) {
     return { ok: false, error: "time_in_past", submittedAt: Date.now() };
   }
 
