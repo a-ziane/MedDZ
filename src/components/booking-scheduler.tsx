@@ -83,6 +83,12 @@ export function BookingScheduler({
     requestAppointmentWithFeedback,
     initialBookingActionState,
   );
+  const showPendingCard = Boolean(
+    bookingState.ok &&
+      bookingState.appointment &&
+      bookingState.submittedAt &&
+      bookingState.submittedAt !== dismissedAt,
+  );
   const weekStart = useMemo(
     () => addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), weekOffset),
     [weekOffset],
@@ -104,7 +110,7 @@ export function BookingScheduler({
 
   const bookedSet = useMemo(() => {
     const pendingBookedSlot: Booked[] =
-      bookingState.ok && bookingState.appointment
+      showPendingCard && bookingState.ok && bookingState.appointment
         ? [
             {
               appointment_date: bookingState.appointment.appointment_date,
@@ -116,7 +122,7 @@ export function BookingScheduler({
     return new Set(
       effectiveBookedSlots.map((slot) => `${slot.appointment_date}|${slot.appointment_time.slice(0, 5)}`),
     );
-  }, [bookedSlots, bookingState.ok, bookingState.appointment]);
+  }, [bookedSlots, bookingState.ok, bookingState.appointment, showPendingCard]);
 
   const selectableDays = useMemo(() => {
     return days.filter((day) => availability.some((slot) => weekdayMatchesDate(slot.weekday, day.weekday)));
@@ -167,12 +173,6 @@ export function BookingScheduler({
     selected && slotsByDate.get(selected.date)?.has(selected.time) ? selected : firstAvailable;
 
   const hasAnySlot = allTimes.length > 0;
-  const showPendingCard = Boolean(
-    bookingState.ok &&
-      bookingState.appointment &&
-      bookingState.submittedAt &&
-      bookingState.submittedAt !== dismissedAt,
-  );
 
   return (
     <Card className="space-y-4 border-blue-100 p-4 sm:p-5">
@@ -207,7 +207,11 @@ export function BookingScheduler({
             </Button>
             <form action={cancelAppointmentByPatient}>
               <input type="hidden" name="appointment_id" value={bookingState.appointment.id} />
-              <Button type="submit" variant="danger">
+              <Button
+                type="submit"
+                variant="danger"
+                onClick={() => setDismissedAt(bookingState.submittedAt ?? Date.now())}
+              >
                 {text("cancelAppointment")}
               </Button>
             </form>
