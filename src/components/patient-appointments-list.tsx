@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { cancelAppointmentByPatient } from "@/lib/actions/patient";
+import { useActionState, useMemo, useState } from "react";
+import { cancelAppointmentByPatientWithFeedback, type CancelActionState } from "@/lib/actions/patient";
 import { useLanguage } from "@/components/providers/language-provider";
 import { AppointmentStatusBadge } from "@/components/status-badge";
 import { Button } from "@/components/ui/button";
@@ -18,20 +18,29 @@ type AppointmentRow = {
 export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) {
   const { locale, text } = useLanguage();
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [cancelState, cancelAction, isCancelling] = useActionState<CancelActionState, FormData>(
+    cancelAppointmentByPatientWithFeedback,
+    { ok: false },
+  );
 
-  const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
+  const visibleItems = useMemo(() => {
+    if (!cancelState.ok || !cancelState.cancelledAppointmentId) return items;
+    return items.filter((item) => item.id !== cancelState.cancelledAppointmentId);
+  }, [items, cancelState.ok, cancelState.cancelledAppointmentId]);
+
+  const byId = useMemo(() => new Map(visibleItems.map((i) => [i.id, i])), [visibleItems]);
   const confirmItem = confirmId ? byId.get(confirmId) ?? null : null;
 
   return (
     <>
       <div className="space-y-3">
-        {items.length === 0 && (
+        {visibleItems.length === 0 && (
           <p className="rounded-xl border border-dashed border-slate-300 p-4 text-sm text-slate-500">
             {text("noAppointmentsYet")}
           </p>
         )}
 
-        {items.map((item) => {
+        {visibleItems.map((item) => {
           const appointmentDate = new Date(`${item.appointment_date}T${item.appointment_time}`);
           const readableDate = Number.isNaN(appointmentDate.getTime())
             ? item.appointment_date
@@ -93,9 +102,9 @@ export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) 
               <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmId(null)}>
                 {text("keepAppointment")}
               </Button>
-              <form action={cancelAppointmentByPatient} className="flex-1">
+              <form action={cancelAction} className="flex-1" onSubmit={() => setConfirmId(null)}>
                 <input type="hidden" name="appointment_id" value={confirmItem.id} />
-                <Button type="submit" variant="danger" className="w-full">
+                <Button type="submit" variant="danger" className="w-full" disabled={isCancelling}>
                   {text("cancelNow")}
                 </Button>
               </form>
@@ -103,7 +112,12 @@ export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) 
           </div>
         </div>
       )}
+
+      {!cancelState.ok && cancelState.error && (
+        <p className="mt-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {text("cancelFailed")}
+        </p>
+      )}
     </>
   );
 }
-

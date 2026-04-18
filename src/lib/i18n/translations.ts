@@ -232,6 +232,11 @@ const dictionary = {
   cancelNow: { en: "Cancel", fr: "Annuler", ar: "إلغاء" },
   chooseDate: { en: "Choose date", fr: "Choisir une date", ar: "اختر التاريخ" },
   availableTimes: { en: "Available times", fr: "Heures disponibles", ar: "الأوقات المتاحة" },
+  cancelFailed: {
+    en: "Could not cancel appointment right now. Please try again.",
+    fr: "Impossible d'annuler le rendez-vous maintenant. Veuillez reessayer.",
+    ar: "تعذر إلغاء الموعد الآن. يرجى المحاولة مرة أخرى.",
+  },
 
   noDoctorsFound: { en: "No doctors found for these filters.", fr: "Aucun medecin pour ces filtres.", ar: "لا يوجد أطباء مطابقون لهذه الفلاتر." },
   loadingDoctors: { en: "Loading doctors...", fr: "Chargement des medecins...", ar: "جارٍ تحميل الأطباء..." },

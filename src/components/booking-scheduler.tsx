@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
-  cancelAppointmentByPatient,
+  cancelAppointmentByPatientWithFeedback,
+  type CancelActionState,
   requestAppointmentWithFeedback,
   type BookingActionState,
   updatePendingAppointmentMessageByPatient,
@@ -84,6 +85,10 @@ export function BookingScheduler({
   const [bookingState, bookingAction, isBooking] = useActionState(
     requestAppointmentWithFeedback,
     initialBookingActionState,
+  );
+  const [cancelState, cancelAction, isCancelling] = useActionState<CancelActionState, FormData>(
+    cancelAppointmentByPatientWithFeedback,
+    { ok: false },
   );
   const showPendingCard = Boolean(
     bookingState.ok &&
@@ -219,7 +224,13 @@ export function BookingScheduler({
             >
               {text("close")}
             </Button>
-            <form action={cancelAppointmentByPatient}>
+            <form
+              action={cancelAction}
+              onSubmit={() => {
+                setDismissedAt(bookingState.submittedAt ?? Date.now());
+                setConfirmPendingCancel(false);
+              }}
+            >
               <input type="hidden" name="appointment_id" value={bookingState.appointment.id} />
               <Button type="button" variant="danger" onClick={() => setConfirmPendingCancel(true)}>
                 {text("cancelAppointment")}
@@ -247,7 +258,7 @@ export function BookingScheduler({
                         type="submit"
                         variant="danger"
                         className="flex-1"
-                        onClick={() => setDismissedAt(bookingState.submittedAt ?? Date.now())}
+                        disabled={isCancelling}
                       >
                         {text("cancelNow")}
                       </Button>
@@ -279,6 +290,12 @@ export function BookingScheduler({
         <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
           {text(bookingErrorKey(bookingState.error))}
           <span className="ml-2 text-xs opacity-70">({bookingState.error})</span>
+        </p>
+      )}
+
+      {!cancelState.ok && cancelState.error && (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {text("cancelFailed")}
         </p>
       )}
 

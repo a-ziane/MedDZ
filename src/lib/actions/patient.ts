@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { createNotification } from "@/lib/actions/notifications";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 const bookingSchema = z.object({
@@ -24,6 +25,13 @@ export type BookingActionState = {
     message_optional: string;
     status: "pending";
   };
+  submittedAt?: number;
+};
+
+export type CancelActionState = {
+  ok: boolean;
+  error?: string;
+  cancelledAppointmentId?: string;
   submittedAt?: number;
 };
 
@@ -299,10 +307,12 @@ export async function cancelAppointmentByPatient(formData: FormData) {
     .update({ status: "cancelled_by_patient" })
     .eq("id", appointmentId);
 
-  await supabase
-    .from("queue_entries")
-    .delete()
-    .eq("appointment_id", appointmentId);
+  try {
+    const admin = createAdminClient();
+    await admin.from("queue_entries").delete().eq("appointment_id", appointmentId);
+  } catch {
+    // Keep cancellation working even if admin env is missing.
+  }
 
   const doctorUser = (appointment.doctors as { user_id?: string } | null)?.user_id;
   if (doctorUser) {
@@ -319,6 +329,83 @@ export async function cancelAppointmentByPatient(formData: FormData) {
   revalidatePath(`/patient/doctors/${appointment.doctor_id}`);
   revalidatePath("/doctor/queue");
   revalidatePath("/patient/queue");
+}
+
+export async function cancelAppointmentByPatientWithFeedback(
+  _prevState: CancelActionState,
+  formData: FormData,
+): Promise<CancelActionState> {
+  const user = await requireRole(["patient"]);
+  const supabase = await createClient();
+  const parsed = z.string().uuid().safeParse(formData.get("appointment_id"));
+  if (!parsed.success) return { ok: false, error: "invalid_appointment", submittedAt: Date.now() };
+  const appointmentId = parsed.data;
+
+  const { data: patient } = await supabase
+    .from("patients")
+    .select("id")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!patient) {
+    return { ok: false, error: "patient_profile_missing", submittedAt: Date.now() };
+  }
+
+  const { data: appointment } = await supabase
+    .from("appointments")
+    .select("id, appointment_date, appointment_time, status, doctor_id, doctors(user_id)")
+    .eq("id", appointmentId)
+    .eq("patient_id", patient.id)
+    .single();
+
+  if (!appointment) {
+    return { ok: false, error: "appointment_not_found", submittedAt: Date.now() };
+  }
+
+  if (appointment.status !== "pending" && appointment.status !== "approved") {
+    return { ok: false, error: "cannot_cancel_status", submittedAt: Date.now() };
+  }
+
+  if (appointment.status === "approved") {
+    const appointmentAt = new Date(`${appointment.appointment_date}T${appointment.appointment_time}:00`);
+    if (Number.isNaN(appointmentAt.getTime()) || appointmentAt <= new Date()) {
+      return { ok: false, error: "cannot_cancel_past", submittedAt: Date.now() };
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from("appointments")
+    .update({ status: "cancelled_by_patient" })
+    .eq("id", appointmentId);
+
+  if (updateError) {
+    return { ok: false, error: "cancel_update_failed", submittedAt: Date.now() };
+  }
+
+  try {
+    const admin = createAdminClient();
+    await admin.from("queue_entries").delete().eq("appointment_id", appointmentId);
+  } catch {
+    // Keep cancellation working even if admin env is missing.
+  }
+
+  const doctorUser = (appointment.doctors as { user_id?: string } | null)?.user_id;
+  if (doctorUser) {
+    await createNotification(
+      doctorUser,
+      "Appointment cancelled",
+      `${user.full_name} cancelled an upcoming appointment.`,
+    );
+  }
+
+  revalidatePath("/patient/appointments");
+  revalidatePath("/doctor");
+  revalidatePath("/doctor/requests");
+  revalidatePath(`/patient/doctors/${appointment.doctor_id}`);
+  revalidatePath("/doctor/queue");
+  revalidatePath("/patient/queue");
+
+  return { ok: true, cancelledAppointmentId: appointmentId, submittedAt: Date.now() };
 }
 
 export async function updatePendingAppointmentMessageByPatient(formData: FormData) {
