@@ -299,6 +299,11 @@ export async function cancelAppointmentByPatient(formData: FormData) {
     .update({ status: "cancelled_by_patient" })
     .eq("id", appointmentId);
 
+  await supabase
+    .from("queue_entries")
+    .delete()
+    .eq("appointment_id", appointmentId);
+
   const doctorUser = (appointment.doctors as { user_id?: string } | null)?.user_id;
   if (doctorUser) {
     await createNotification(
@@ -312,6 +317,8 @@ export async function cancelAppointmentByPatient(formData: FormData) {
   revalidatePath("/doctor");
   revalidatePath("/doctor/requests");
   revalidatePath(`/patient/doctors/${appointment.doctor_id}`);
+  revalidatePath("/doctor/queue");
+  revalidatePath("/patient/queue");
 }
 
 export async function updatePendingAppointmentMessageByPatient(formData: FormData) {

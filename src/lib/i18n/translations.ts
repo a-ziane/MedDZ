@@ -218,6 +218,20 @@ const dictionary = {
     fr: "Veuillez choisir une date et un creneau avant de reserver.",
     ar: "يرجى اختيار تاريخ ووقت الموعد قبل الحجز.",
   },
+  confirmCancelTitle: {
+    en: "Are you sure you want to cancel?",
+    fr: "Voulez-vous vraiment annuler ?",
+    ar: "هل أنت متأكد أنك تريد الإلغاء؟",
+  },
+  confirmCancelBody: {
+    en: "This appointment will be cancelled and removed from queue.",
+    fr: "Ce rendez-vous sera annule et retire de la file.",
+    ar: "سيتم إلغاء هذا الموعد وإزالته من الطابور.",
+  },
+  keepAppointment: { en: "Keep", fr: "Garder", ar: "احتفاظ" },
+  cancelNow: { en: "Cancel", fr: "Annuler", ar: "إلغاء" },
+  chooseDate: { en: "Choose date", fr: "Choisir une date", ar: "اختر التاريخ" },
+  availableTimes: { en: "Available times", fr: "Heures disponibles", ar: "الأوقات المتاحة" },
 
   noDoctorsFound: { en: "No doctors found for these filters.", fr: "Aucun medecin pour ces filtres.", ar: "لا يوجد أطباء مطابقون لهذه الفلاتر." },
   loadingDoctors: { en: "Loading doctors...", fr: "Chargement des medecins...", ar: "جارٍ تحميل الأطباء..." },

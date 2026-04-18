@@ -78,7 +78,9 @@ export function BookingScheduler({
   const { locale, text } = useLanguage();
   const [weekOffset, setWeekOffset] = useState(0);
   const [selected, setSelected] = useState<{ date: string; time: string } | null>(null);
+  const [mobileDate, setMobileDate] = useState<string | null>(null);
   const [dismissedAt, setDismissedAt] = useState<number | null>(null);
+  const [confirmPendingCancel, setConfirmPendingCancel] = useState(false);
   const [bookingState, bookingAction, isBooking] = useActionState(
     requestAppointmentWithFeedback,
     initialBookingActionState,
@@ -173,6 +175,18 @@ export function BookingScheduler({
     selected && slotsByDate.get(selected.date)?.has(selected.time) ? selected : firstAvailable;
 
   const hasAnySlot = allTimes.length > 0;
+  const effectiveMobileDate =
+    mobileDate && selectableDays.some((d) => d.iso === mobileDate)
+      ? mobileDate
+      : effectiveSelected?.date ?? selectableDays[0]?.iso ?? null;
+  const mobileTimes = effectiveMobileDate ? [...(slotsByDate.get(effectiveMobileDate) ?? new Set<string>())].sort() : [];
+  const mobileFirstTime = mobileTimes[0];
+  const finalSelected =
+    effectiveSelected?.date === effectiveMobileDate
+      ? effectiveSelected
+      : effectiveMobileDate && mobileFirstTime
+        ? { date: effectiveMobileDate, time: mobileFirstTime }
+        : effectiveSelected;
 
   return (
     <Card className="space-y-4 border-blue-100 p-4 sm:p-5">
@@ -207,13 +221,40 @@ export function BookingScheduler({
             </Button>
             <form action={cancelAppointmentByPatient}>
               <input type="hidden" name="appointment_id" value={bookingState.appointment.id} />
-              <Button
-                type="submit"
-                variant="danger"
-                onClick={() => setDismissedAt(bookingState.submittedAt ?? Date.now())}
-              >
+              <Button type="button" variant="danger" onClick={() => setConfirmPendingCancel(true)}>
                 {text("cancelAppointment")}
               </Button>
+
+              {confirmPendingCancel && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center">
+                  <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+                    <h3 className="text-lg font-semibold">{text("confirmCancelTitle")}</h3>
+                    <p className="mt-1 text-sm text-slate-600">{text("confirmCancelBody")}</p>
+                    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                      <p>{bookingState.appointment.appointment_date}</p>
+                      <p>{bookingState.appointment.appointment_time}</p>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setConfirmPendingCancel(false)}
+                      >
+                        {text("keepAppointment")}
+                      </Button>
+                      <Button
+                        type="submit"
+                        variant="danger"
+                        className="flex-1"
+                        onClick={() => setDismissedAt(bookingState.submittedAt ?? Date.now())}
+                      >
+                        {text("cancelNow")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </div>
 
@@ -267,7 +308,57 @@ export function BookingScheduler({
         </Button>
       </div>
 
-      <div className="overflow-auto rounded-xl border border-slate-200 bg-white shadow-inner shadow-blue-50">
+      <div className="md:hidden space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+        <p className="text-xs font-medium text-slate-600">{text("chooseDate")}</p>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {selectableDays.map((day) => {
+            const active = day.iso === effectiveMobileDate;
+            return (
+              <button
+                key={day.iso}
+                type="button"
+                onClick={() => setMobileDate(day.iso)}
+                className={cn(
+                  "min-w-24 rounded-xl border px-3 py-2 text-left",
+                  active ? "border-blue-500 bg-blue-600 text-white" : "border-slate-200 bg-white text-slate-700",
+                )}
+              >
+                <p className="text-xs capitalize">{day.weekdayLabel}</p>
+                <p className="text-xs opacity-80">{day.dateLabel}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        <p className="text-xs font-medium text-slate-600">{text("availableTimes")}</p>
+        <div className="grid grid-cols-3 gap-2">
+          {mobileTimes.map((time) => {
+            const active = finalSelected?.date === effectiveMobileDate && finalSelected?.time === time;
+            return (
+              <button
+                key={time}
+                type="button"
+                onClick={() => {
+                  if (effectiveMobileDate) setSelected({ date: effectiveMobileDate, time });
+                }}
+                className={cn(
+                  "h-9 rounded-lg border text-xs font-medium",
+                  active ? "border-blue-500 bg-blue-600 text-white" : "border-blue-200 bg-white text-blue-700",
+                )}
+              >
+                {time}
+              </button>
+            );
+          })}
+          {mobileTimes.length === 0 && (
+            <p className="col-span-3 rounded-xl border border-dashed border-slate-300 p-3 text-center text-xs text-slate-500">
+              {text("noSlotsThisWeek")}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="hidden overflow-auto rounded-xl border border-slate-200 bg-white shadow-inner shadow-blue-50 md:block">
         <table className="w-full min-w-[680px] border-collapse text-sm">
           <thead>
             <tr>
@@ -324,19 +415,19 @@ export function BookingScheduler({
 
       <form action={bookingAction} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
         <input type="hidden" name="doctor_id" value={doctorId} />
-        <input type="hidden" name="appointment_date" value={effectiveSelected?.date ?? ""} />
-        <input type="hidden" name="appointment_time" value={effectiveSelected?.time ?? ""} />
+        <input type="hidden" name="appointment_date" value={finalSelected?.date ?? ""} />
+        <input type="hidden" name="appointment_time" value={finalSelected?.time ?? ""} />
 
         <p className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-800">
-          {effectiveSelected
-            ? `${text("selectedSlot")}: ${effectiveSelected.date} ${effectiveSelected.time}`
+          {finalSelected
+            ? `${text("selectedSlot")}: ${finalSelected.date} ${finalSelected.time}`
             : text("selectTimeSlot")}
         </p>
 
         <Textarea name="message_optional" placeholder={text("optionalMessage")} maxLength={400} />
 
         <div className="flex justify-start">
-          <Button type="submit" disabled={!effectiveSelected || !hasAnySlot || isBooking}>
+          <Button type="submit" disabled={!finalSelected || !hasAnySlot || isBooking}>
             {text("submitBookingRequest")}
           </Button>
         </div>
