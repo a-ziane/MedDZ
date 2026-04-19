@@ -57,7 +57,7 @@ export default async function DoctorProfilePage({ params }: { params: Promise<{ 
 
   return (
     <DashboardShell title={text("dashboardPatient")} pathname="/patient/doctors" nav={buildPatientNav(text)}>
-      <Card className="space-y-4 bg-gradient-to-br from-white via-blue-50/50 to-white">
+      <Card className="w-full max-w-full space-y-4 overflow-hidden bg-gradient-to-br from-white via-blue-50/50 to-white">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-blue-100 text-2xl font-semibold text-blue-700">
             {doctor.profile_photo ? (
@@ -67,13 +67,13 @@ export default async function DoctorProfilePage({ params }: { params: Promise<{ 
               <span>{initials || "DR"}</span>
             )}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">Dr. {fullName}</h1>
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="break-words text-2xl font-bold">Dr. {fullName}</h1>
               <Badge variant="success">{text("approved")}</Badge>
             </div>
             <p className="text-slate-600 dark:text-slate-300">{doctor.specialty}</p>
-            <p className="text-sm text-slate-500">
+            <p className="break-words text-sm text-slate-500">
               {doctor.clinic_name} • {doctor.city}, {doctor.wilaya}
             </p>
           </div>

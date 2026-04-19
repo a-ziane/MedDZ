@@ -199,7 +199,7 @@ export function BookingScheduler({
         : effectiveSelected;
 
   return (
-    <Card className="space-y-4 border-blue-100 p-4 sm:p-5">
+    <Card className="w-full max-w-full space-y-4 overflow-hidden border-blue-100 p-4 sm:p-5">
       <div>
         <h2 className="text-lg font-semibold">{text("bookAppointment")}</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{text("bookingHint")}</p>
@@ -300,7 +300,7 @@ export function BookingScheduler({
         </p>
       )}
 
-      <div className="mb-1 flex items-center justify-between gap-2">
+      <div className="mb-1 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <Button
           type="button"
           variant="outline"
@@ -311,7 +311,7 @@ export function BookingScheduler({
         >
           <ChevronLeft size={14} /> {text("previousWeek")}
         </Button>
-        <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+        <p className="w-full text-center text-sm font-medium text-slate-600 dark:text-slate-300 sm:w-auto sm:text-left">
           {text("weekOf")} {new Intl.DateTimeFormat(locale, { month: "long", day: "numeric" }).format(weekStart)}
         </p>
         <Button
@@ -326,7 +326,7 @@ export function BookingScheduler({
         </Button>
       </div>
 
-      <div className="md:hidden space-y-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
+      <div className="space-y-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900 md:hidden">
         <p className="text-xs font-medium text-slate-600">{text("chooseDate")}</p>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {selectableDays.map((day) => {
@@ -351,7 +351,7 @@ export function BookingScheduler({
         </div>
 
         <p className="text-xs font-medium text-slate-600">{text("availableTimes")}</p>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {mobileTimes.map((time) => {
             const active = finalSelected?.date === effectiveMobileDate && finalSelected?.time === time;
             return (
@@ -437,12 +437,12 @@ export function BookingScheduler({
         </table>
       </div>
 
-      <form action={bookingAction} className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
+      <form action={bookingAction} className="grid w-full gap-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3">
         <input type="hidden" name="doctor_id" value={doctorId} />
         <input type="hidden" name="appointment_date" value={finalSelected?.date ?? ""} />
         <input type="hidden" name="appointment_time" value={finalSelected?.time ?? ""} />
 
-        <p className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+        <p className="break-words rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-800">
           {finalSelected
             ? `${text("selectedSlot")}: ${finalSelected.date} ${finalSelected.time}`
             : text("selectTimeSlot")}

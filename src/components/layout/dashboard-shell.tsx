@@ -24,7 +24,7 @@ export function DashboardShell({
     <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
       <Navbar isAuthed />
       <div className="mx-auto grid w-full max-w-7xl gap-4 px-4 py-6 sm:grid-cols-[240px_1fr] sm:px-6">
-        <aside className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <aside className="min-w-0 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
           <h2 className="px-2 pb-2 text-sm font-semibold text-slate-500">{title}</h2>
           <nav className="space-y-1">
             {nav.map((item) => {
@@ -48,7 +48,7 @@ export function DashboardShell({
             })}
           </nav>
         </aside>
-        <main className="space-y-4">{children}</main>
+        <main className="min-w-0 space-y-4">{children}</main>
       </div>
     </div>
   );
