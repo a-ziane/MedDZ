@@ -60,7 +60,7 @@ export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) 
           return (
             <div
               key={item.id}
-              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-blue-100/40"
+              className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm shadow-blue-100/40 dark:border-slate-800 dark:bg-slate-900 dark:shadow-none"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div>
@@ -86,16 +86,16 @@ export function PatientAppointmentsList({ items }: { items: AppointmentRow[] }) 
 
       {confirmItem && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center">
-          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-900">
             <h2 className="text-lg font-semibold">{text("confirmCancelTitle")}</h2>
-            <p className="mt-1 text-sm text-slate-600">{text("confirmCancelBody")}</p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{text("confirmCancelBody")}</p>
 
-            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800">
               <p className="font-medium">Dr. {confirmItem.doctor_name}</p>
-              <p className="text-slate-600">
+              <p className="text-slate-600 dark:text-slate-300">
                 {confirmItem.appointment_date} {text("atLabel")} {confirmItem.appointment_time}
               </p>
-              <p className="text-slate-600">{confirmItem.clinic_name}</p>
+              <p className="text-slate-600 dark:text-slate-300">{confirmItem.clinic_name}</p>
             </div>
 
             <div className="mt-4 flex gap-2">

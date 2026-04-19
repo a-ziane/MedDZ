@@ -58,7 +58,7 @@ export function Navbar({ isAuthed = false }: { isAuthed?: boolean }) {
       {mobileOpen && (
         <div className="border-t border-slate-200 bg-white px-4 py-3 shadow-sm sm:hidden dark:border-slate-800 dark:bg-slate-950">
           <div className="space-y-3">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-col items-stretch gap-2">
               <LanguageSwitcher />
               <ModeToggle />
             </div>

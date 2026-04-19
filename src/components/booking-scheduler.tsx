@@ -239,10 +239,10 @@ export function BookingScheduler({
 
               {confirmPendingCancel && !pendingCancelled && (
                 <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/50 p-4 sm:items-center">
-                  <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl">
+                  <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-900">
                     <h3 className="text-lg font-semibold">{text("confirmCancelTitle")}</h3>
-                    <p className="mt-1 text-sm text-slate-600">{text("confirmCancelBody")}</p>
-                    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                    <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{text("confirmCancelBody")}</p>
+                    <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-700 dark:bg-slate-800">
                       <p>{bookingState.appointment.appointment_date}</p>
                       <p>{bookingState.appointment.appointment_time}</p>
                     </div>
@@ -326,7 +326,7 @@ export function BookingScheduler({
         </Button>
       </div>
 
-      <div className="md:hidden space-y-3 rounded-xl border border-slate-200 bg-white p-3">
+      <div className="md:hidden space-y-3 rounded-xl border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-900">
         <p className="text-xs font-medium text-slate-600">{text("chooseDate")}</p>
         <div className="flex gap-2 overflow-x-auto pb-1">
           {selectableDays.map((day) => {
@@ -338,7 +338,9 @@ export function BookingScheduler({
                 onClick={() => setMobileDate(day.iso)}
                 className={cn(
                   "min-w-24 rounded-xl border px-3 py-2 text-left",
-                  active ? "border-blue-500 bg-blue-600 text-white" : "border-slate-200 bg-white text-slate-700",
+                  active
+                    ? "border-blue-500 bg-blue-600 text-white"
+                    : "border-slate-200 bg-white text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
                 )}
               >
                 <p className="text-xs capitalize">{day.weekdayLabel}</p>
@@ -361,7 +363,9 @@ export function BookingScheduler({
                 }}
                 className={cn(
                   "h-9 rounded-lg border text-xs font-medium",
-                  active ? "border-blue-500 bg-blue-600 text-white" : "border-blue-200 bg-white text-blue-700",
+                  active
+                    ? "border-blue-500 bg-blue-600 text-white"
+                    : "border-blue-200 bg-white text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
                 )}
               >
                 {time}
@@ -376,17 +380,17 @@ export function BookingScheduler({
         </div>
       </div>
 
-      <div className="hidden overflow-auto rounded-xl border border-slate-200 bg-white shadow-inner shadow-blue-50 md:block">
+      <div className="hidden overflow-auto rounded-xl border border-slate-200 bg-white shadow-inner shadow-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:shadow-none md:block">
         <table className="w-full min-w-[680px] border-collapse text-sm">
           <thead>
             <tr>
-              <th className="w-24 border-b border-slate-200 bg-slate-50 p-2 text-left text-slate-600">
+              <th className="w-24 border-b border-slate-200 bg-slate-50 p-2 text-left text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
                 {text("time")}
               </th>
               {selectableDays.map((day) => (
-                <th key={day.iso} className="border-b border-l border-slate-200 bg-slate-50 p-2 text-left">
+                <th key={day.iso} className="border-b border-l border-slate-200 bg-slate-50 p-2 text-left dark:border-slate-700 dark:bg-slate-800">
                   <p className="capitalize">{day.weekdayLabel}</p>
-                  <p className="text-xs text-slate-500">{day.dateLabel}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{day.dateLabel}</p>
                 </th>
               ))}
             </tr>
@@ -394,13 +398,15 @@ export function BookingScheduler({
           <tbody>
             {allTimes.map((time) => (
               <tr key={time}>
-                <td className="border-b border-slate-200 bg-slate-50 p-2 font-medium text-slate-600">{time}</td>
+                <td className="border-b border-slate-200 bg-slate-50 p-2 font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                  {time}
+                </td>
                 {selectableDays.map((day) => {
                   const available = slotsByDate.get(day.iso)?.has(time) ?? false;
                   const active = effectiveSelected?.date === day.iso && effectiveSelected?.time === time;
 
                   return (
-                    <td key={`${day.iso}-${time}`} className="border-l border-b border-slate-200 p-1">
+                    <td key={`${day.iso}-${time}`} className="border-l border-b border-slate-200 p-1 dark:border-slate-700">
                       <button
                         type="button"
                         disabled={!available}
@@ -408,8 +414,8 @@ export function BookingScheduler({
                         className={cn(
                           "h-9 w-full rounded-lg border px-1 text-[11px] font-medium transition",
                           available
-                            ? "border-blue-200 bg-white text-blue-700 hover:border-blue-400 hover:bg-blue-50"
-                            : "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300",
+                            ? "border-blue-200 bg-white text-blue-700 hover:border-blue-400 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+                            : "cursor-not-allowed border-slate-100 bg-slate-50 text-slate-300 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-500",
                           active && "border-blue-500 bg-blue-600 text-white shadow-sm shadow-blue-300/40",
                         )}
                       >

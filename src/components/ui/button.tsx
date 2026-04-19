@@ -8,8 +8,9 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variants = {
   default: "bg-blue-600 text-white hover:bg-blue-700",
-  outline: "border border-blue-200 bg-white text-blue-700 hover:bg-blue-50",
-  ghost: "text-slate-700 hover:bg-slate-100",
+  outline:
+    "border border-blue-200 bg-white text-blue-700 hover:bg-blue-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800",
+  ghost: "text-slate-700 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800",
   danger: "bg-red-600 text-white hover:bg-red-700",
 };
 
