@@ -13,7 +13,7 @@ export function AppProviders({
   locale: Locale;
 }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider attribute="class" forcedTheme="light" enableSystem={false}>
       <LanguageProvider initialLocale={locale}>
         {children}
         <Toaster richColors position="top-right" />

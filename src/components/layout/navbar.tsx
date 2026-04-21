@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Menu, Stethoscope, X } from "lucide-react";
 import { useState } from "react";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { ModeToggle } from "@/components/mode-toggle";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/components/providers/language-provider";
 import { logout } from "@/lib/actions/auth";
@@ -22,7 +21,6 @@ export function Navbar({ isAuthed = false }: { isAuthed?: boolean }) {
 
         <div className="hidden items-center gap-2 sm:flex">
           <LanguageSwitcher />
-          <ModeToggle />
           {isAuthed ? (
             <form action={logout}>
               <Button size="sm" variant="outline" type="submit">
@@ -60,7 +58,6 @@ export function Navbar({ isAuthed = false }: { isAuthed?: boolean }) {
           <div className="space-y-3">
             <div className="flex flex-col items-stretch gap-2">
               <LanguageSwitcher />
-              <ModeToggle />
             </div>
 
             {isAuthed ? (
