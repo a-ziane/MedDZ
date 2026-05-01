@@ -144,13 +144,18 @@ export function BookingScheduler({
     const now = new Date();
     const todayIso = format(now, "yyyy-MM-dd");
 
-    const map = new Map<string, Set<string>>();
+    const all = new Map<string, Set<string>>();
+    const available = new Map<string, Set<string>>();
     for (const day of selectableDays) {
       const daySlots = availability
         .filter((slot) => weekdayMatchesDate(slot.weekday, day.weekday))
-        .flatMap((slot) => buildSlots(slot.start_time.slice(0, 5), slot.end_time.slice(0, 5), slot.slot_minutes))
-        .filter((time) => !bookedSet.has(`${day.iso}|${time}`))
-        .filter((time) => {
+        .flatMap((slot) => buildSlots(slot.start_time.slice(0, 5), slot.end_time.slice(0, 5), slot.slot_minutes));
+
+      const uniqueDaySlots = [...new Set(daySlots)].sort();
+      const freeDaySlots = uniqueDaySlots.filter((time) => {
+        if (bookedSet.has(`${day.iso}|${time}`)) return false;
+        return true;
+      }).filter((time) => {
           if (day.iso !== todayIso) return true;
           const [h, m] = time.split(":").map(Number);
           const candidate = new Date(now);
@@ -158,14 +163,15 @@ export function BookingScheduler({
           return candidate > now;
         });
 
-      map.set(day.iso, new Set(daySlots));
+      all.set(day.iso, new Set(uniqueDaySlots));
+      available.set(day.iso, new Set(freeDaySlots));
     }
-    return map;
+    return { all, available };
   }, [selectableDays, availability, bookedSet]);
 
   const allTimes = useMemo(() => {
     const set = new Set<string>();
-    for (const slotSet of slotsByDate.values()) {
+    for (const slotSet of slotsByDate.all.values()) {
       for (const t of slotSet) set.add(t);
     }
     return [...set].sort();
@@ -173,7 +179,7 @@ export function BookingScheduler({
 
   let firstAvailable: { date: string; time: string } | null = null;
   for (const day of selectableDays) {
-    const slotSet = slotsByDate.get(day.iso);
+    const slotSet = slotsByDate.available.get(day.iso);
     const first = slotSet ? [...slotSet].sort()[0] : undefined;
     if (first) {
       firstAvailable = { date: day.iso, time: first };
@@ -182,15 +188,17 @@ export function BookingScheduler({
   }
 
   const effectiveSelected =
-    selected && slotsByDate.get(selected.date)?.has(selected.time) ? selected : firstAvailable;
+    selected && slotsByDate.available.get(selected.date)?.has(selected.time) ? selected : firstAvailable;
 
   const hasAnySlot = allTimes.length > 0;
   const effectiveMobileDate =
     mobileDate && selectableDays.some((d) => d.iso === mobileDate)
       ? mobileDate
       : effectiveSelected?.date ?? selectableDays[0]?.iso ?? null;
-  const mobileTimes = effectiveMobileDate ? [...(slotsByDate.get(effectiveMobileDate) ?? new Set<string>())].sort() : [];
-  const mobileFirstTime = mobileTimes[0];
+  const mobileTimes = effectiveMobileDate ? [...(slotsByDate.all.get(effectiveMobileDate) ?? new Set<string>())].sort() : [];
+  const mobileFirstTime = mobileTimes.find((time) =>
+    effectiveMobileDate ? slotsByDate.available.get(effectiveMobileDate)?.has(time) : false,
+  );
   const finalSelected =
     effectiveSelected?.date === effectiveMobileDate
       ? effectiveSelected
@@ -353,22 +361,26 @@ export function BookingScheduler({
         <p className="text-xs font-medium text-slate-600">{text("availableTimes")}</p>
         <div className="grid grid-cols-2 gap-2">
           {mobileTimes.map((time) => {
-            const active = finalSelected?.date === effectiveMobileDate && finalSelected?.time === time;
+            const isAvailable = effectiveMobileDate ? (slotsByDate.available.get(effectiveMobileDate)?.has(time) ?? false) : false;
+            const active = isAvailable && finalSelected?.date === effectiveMobileDate && finalSelected?.time === time;
             return (
               <button
                 key={time}
                 type="button"
+                disabled={!isAvailable}
                 onClick={() => {
-                  if (effectiveMobileDate) setSelected({ date: effectiveMobileDate, time });
+                  if (effectiveMobileDate && isAvailable) setSelected({ date: effectiveMobileDate, time });
                 }}
                 className={cn(
-                  "h-9 rounded-lg border text-xs font-medium",
+                  "h-9 rounded-lg border px-2 text-xs font-medium",
                   active
                     ? "border-blue-500 bg-blue-600 text-white"
-                    : "border-blue-200 bg-white text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100",
+                    : isAvailable
+                      ? "border-blue-200 bg-white text-blue-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400",
                 )}
               >
-                {time}
+                {time} {!isAvailable ? `· ${text("unavailable")}` : ""}
               </button>
             );
           })}
@@ -402,7 +414,7 @@ export function BookingScheduler({
                   {time}
                 </td>
                 {selectableDays.map((day) => {
-                  const available = slotsByDate.get(day.iso)?.has(time) ?? false;
+                  const available = slotsByDate.available.get(day.iso)?.has(time) ?? false;
                   const active = effectiveSelected?.date === day.iso && effectiveSelected?.time === time;
 
                   return (
@@ -419,7 +431,7 @@ export function BookingScheduler({
                           active && "border-blue-500 bg-blue-600 text-white shadow-sm shadow-blue-300/40",
                         )}
                       >
-                        {available ? text("select") : "--"}
+                        {available ? text("select") : text("unavailable")}
                       </button>
                     </td>
                   );
