@@ -38,21 +38,21 @@ export function LandingPage() {
             <div className="flex items-start gap-3">
               <CalendarClock className="text-blue-600" />
               <div>
-                <h3 className="font-semibold text-sky-500">{text("step1")}</h3>
+                <h3 className="font-semibold text-blue-600">{text("step1")}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300">{text("step2")}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <Activity className="text-blue-600" />
               <div>
-                <h3 className="font-semibold text-sky-500">{text("step3")}</h3>
+                <h3 className="font-semibold text-blue-600">{text("step3")}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300">{text("trust3Body")}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
               <ShieldCheck className="text-blue-600" />
               <div>
-                <h3 className="font-semibold">{text("trust1Title")}</h3>
+                <h3 className="font-semibold text-blue-600">{text("trust1Title")}</h3>
                 <p className="text-sm text-slate-600 dark:text-slate-300">{text("trust1Body")}</p>
               </div>
             </div>
@@ -71,7 +71,7 @@ export function LandingPage() {
               return (
                 <div key={item.title} className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
                   <Icon className="mb-2 text-blue-600" size={20} />
-                  <h3 className="font-semibold text-sky-500">{item.title}</h3>
+                  <h3 className="font-semibold text-blue-600">{item.title}</h3>
                   <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.body}</p>
                 </div>
               );
