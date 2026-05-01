@@ -84,7 +84,9 @@ export default function LoginPage() {
               <button
                 type="button"
                 className={`rounded-xl border px-3 py-2 text-sm ${
-                  accountType === "patient" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-slate-200"
+                  accountType === "patient"
+                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    : "border-slate-200 bg-slate-100 text-slate-500"
                 }`}
                 onClick={() => setAccountType("patient")}
               >
@@ -93,7 +95,9 @@ export default function LoginPage() {
               <button
                 type="button"
                 className={`rounded-xl border px-3 py-2 text-sm ${
-                  accountType === "doctor" ? "border-blue-300 bg-blue-50 text-blue-700" : "border-slate-200"
+                  accountType === "doctor"
+                    ? "border-blue-300 bg-blue-50 text-blue-700"
+                    : "border-slate-200 bg-slate-100 text-slate-500"
                 }`}
                 onClick={() => setAccountType("doctor")}
               >

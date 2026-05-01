@@ -23,7 +23,7 @@ export function LandingPage() {
             </h1>
             <p className="max-w-2xl text-lg text-slate-600 dark:text-slate-300">{text("tagline")}</p>
             <div className="grid gap-2 sm:flex sm:flex-wrap sm:gap-3">
-              <Link href="/patient/doctors">
+              <Link href="/auth/login?type=patient">
                 <Button size="lg" className="w-full sm:w-auto">{text("findDoctor")}</Button>
               </Link>
               <Link href="/auth/signup?type=doctor">
