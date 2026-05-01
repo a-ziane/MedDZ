@@ -246,7 +246,7 @@ export async function requestAppointmentWithFeedback(
     return { ok: false, error: "slot_already_taken", submittedAt: Date.now() };
   }
 
-  const { data: inserted } = await supabase
+  const { data: inserted, error: insertError } = await supabase
     .from("appointments")
     .insert({
       patient_id: patient.id,
@@ -258,6 +258,17 @@ export async function requestAppointmentWithFeedback(
     })
     .select("id, doctor_id, appointment_date, appointment_time, message_optional, status")
     .single();
+
+  if (insertError) {
+    const msg = `${insertError.code ?? ""}|${insertError.message ?? ""}|${insertError.details ?? ""}`.toLowerCase();
+    if (msg.includes("duplicate key") || msg.includes("appointments_unique_active_slot_idx") || insertError.code === "23505") {
+      return { ok: false, error: "slot_already_taken", submittedAt: Date.now() };
+    }
+    if (msg.includes("row-level security") || msg.includes("permission denied") || insertError.code === "42501") {
+      return { ok: false, error: "insert_blocked_by_rls", submittedAt: Date.now() };
+    }
+    return { ok: false, error: `insert_failed:${insertError.code ?? "unknown"}`, submittedAt: Date.now() };
+  }
 
   if (!inserted) {
     return { ok: false, error: "insert_failed", submittedAt: Date.now() };
