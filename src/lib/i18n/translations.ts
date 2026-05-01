@@ -71,6 +71,21 @@ const dictionary = {
   newHere: { en: "New here?", fr: "Nouveau ici ?", ar: "جديد هنا؟" },
   signingIn: { en: "Signing in...", fr: "Connexion...", ar: "جارٍ تسجيل الدخول..." },
   creatingAccount: { en: "Creating account...", fr: "Creation du compte...", ar: "جارٍ إنشاء الحساب..." },
+  wrongPassword: {
+    en: "Incorrect password. Please try again.",
+    fr: "Mot de passe incorrect. Veuillez reessayer.",
+    ar: "كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
+  },
+  emailNoAccount: {
+    en: "No account found for this email.",
+    fr: "Aucun compte trouve pour cet email.",
+    ar: "لا يوجد حساب لهذا البريد الإلكتروني.",
+  },
+  loginFailedTryAgain: {
+    en: "Login failed. Please try again.",
+    fr: "Echec de connexion. Veuillez reessayer.",
+    ar: "فشل تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+  },
 
   emailConfirmTitle: {
     en: "Check your email to confirm your account",

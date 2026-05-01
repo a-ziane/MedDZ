@@ -35,11 +35,25 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      if (error.message.toLowerCase().includes("confirm")) {
+      const msg = error.message.toLowerCase();
+
+      if (msg.includes("confirm")) {
         toast.error(text("emailNotConfirmed"));
         router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+      } else if (msg.includes("invalid login credentials")) {
+        try {
+          const result = await fetch("/api/auth/account-exists", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email }),
+          });
+          const data = (await result.json()) as { exists?: boolean };
+          toast.error(data.exists ? text("wrongPassword") : text("emailNoAccount"));
+        } catch {
+          toast.error(text("loginFailedTryAgain"));
+        }
       } else {
-        toast.error(error.message);
+        toast.error(error.message || text("loginFailedTryAgain"));
       }
       setLoading(false);
       return;
@@ -50,7 +64,7 @@ export default function LoginPage() {
     } = await supabase.auth.getUser();
 
     if (!user) {
-      toast.error("Login failed. Please try again.");
+      toast.error(text("loginFailedTryAgain"));
       setLoading(false);
       return;
     }
