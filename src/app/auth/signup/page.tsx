@@ -21,7 +21,6 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const initial = searchParams.get("type") === "doctor" ? "doctor" : "patient";
   const [accountType, setAccountType] = useState<"patient" | "doctor">(initial);
-  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
 
   const pageTitle = useMemo(
     () => (accountType === "patient" ? text("patientSignup") : text("doctorSignup")),
@@ -57,7 +56,6 @@ export default function SignUpPage() {
           city,
           address,
         },
-        emailRedirectTo: `${siteUrl || window.location.origin}/auth/login`,
       },
     });
 
@@ -67,7 +65,8 @@ export default function SignUpPage() {
       return;
     }
 
-    router.push(`/auth/verify-email?email=${encodeURIComponent(email)}&type=${accountType}`);
+    toast.success("Account created. You can log in now.");
+    router.push(`/auth/login?type=${accountType}`);
   }
 
   return (

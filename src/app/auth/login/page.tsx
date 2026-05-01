@@ -38,8 +38,7 @@ export default function LoginPage() {
       const msg = error.message.toLowerCase();
 
       if (msg.includes("confirm")) {
-        toast.error(text("emailNotConfirmed"));
-        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+        toast.error(text("loginFailedTryAgain"));
       } else if (msg.includes("invalid login credentials")) {
         try {
           const result = await fetch("/api/auth/account-exists", {
