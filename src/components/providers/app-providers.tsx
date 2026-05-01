@@ -1,8 +1,8 @@
 "use client";
 
+import { useEffect } from "react";
 import { Toaster } from "sonner";
 import { LanguageProvider } from "@/components/providers/language-provider";
-import { ThemeProvider } from "@/components/providers/theme-provider";
 import type { Locale } from "@/lib/types";
 
 export function AppProviders({
@@ -12,12 +12,23 @@ export function AppProviders({
   children: React.ReactNode;
   locale: Locale;
 }) {
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.add("light");
+    document.body.classList.remove("dark");
+    document.body.classList.add("light");
+    document.documentElement.style.colorScheme = "light";
+    try {
+      localStorage.setItem("theme", "light");
+    } catch {
+      // noop
+    }
+  }, []);
+
   return (
-    <ThemeProvider attribute="class" forcedTheme="light" enableSystem={false}>
-      <LanguageProvider initialLocale={locale}>
-        {children}
-        <Toaster richColors position="top-right" />
-      </LanguageProvider>
-    </ThemeProvider>
+    <LanguageProvider initialLocale={locale}>
+      {children}
+      <Toaster richColors position="top-right" />
+    </LanguageProvider>
   );
 }
