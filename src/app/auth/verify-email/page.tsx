@@ -14,6 +14,7 @@ export default function VerifyEmailPage() {
   const searchParams = useSearchParams();
   const { text } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
 
   const email = searchParams.get("email") ?? "";
 
@@ -24,7 +25,7 @@ export default function VerifyEmailPage() {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/login` },
+      options: { emailRedirectTo: `${siteUrl || window.location.origin}/auth/login` },
     });
 
     if (error) {

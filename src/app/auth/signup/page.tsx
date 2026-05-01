@@ -21,6 +21,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const initial = searchParams.get("type") === "doctor" ? "doctor" : "patient";
   const [accountType, setAccountType] = useState<"patient" | "doctor">(initial);
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").trim();
 
   const pageTitle = useMemo(
     () => (accountType === "patient" ? text("patientSignup") : text("doctorSignup")),
@@ -56,7 +57,7 @@ export default function SignUpPage() {
           city,
           address,
         },
-        emailRedirectTo: `${window.location.origin}/auth/login`,
+        emailRedirectTo: `${siteUrl || window.location.origin}/auth/login`,
       },
     });
 
