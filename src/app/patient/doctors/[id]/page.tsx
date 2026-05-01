@@ -3,6 +3,7 @@ import { addDays, format } from "date-fns";
 import { requireRole } from "@/lib/auth";
 import { getServerT } from "@/lib/i18n/server";
 import { buildPatientNav } from "@/lib/nav";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { BookingScheduler } from "@/components/booking-scheduler";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
@@ -34,7 +35,8 @@ export default async function DoctorProfilePage({ params }: { params: Promise<{ 
 
   const fromDate = format(new Date(), "yyyy-MM-dd");
   const toDate = format(addDays(new Date(), 35), "yyyy-MM-dd");
-  const { data: booked } = await supabase
+  const adminSupabase = createAdminClient();
+  const { data: booked } = await adminSupabase
     .from("appointments")
     .select("appointment_date, appointment_time")
     .eq("doctor_id", id)

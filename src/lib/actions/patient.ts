@@ -146,7 +146,8 @@ export async function requestAppointment(formData: FormData) {
     return;
   }
 
-  const { data: duplicate } = await supabase
+  const adminSupabase = createAdminClient();
+  const { data: duplicate } = await adminSupabase
     .from("appointments")
     .select("id")
     .eq("doctor_id", parsed.data.doctor_id)
